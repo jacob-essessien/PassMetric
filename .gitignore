@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Project-specific runtime files
+backend/.secret_key
+backend/passmetric.db
+backend/instance/
+*.db-journal
+
+# Secrets
+backend/env.env
+.env
+*.env
+!.env.example
+*.env.local
+
+# Large datasets / generated models
+backend/rockyou.txt
+backend/eff_large_wordlist.txt
+backend/password_ml_model.pkl
+backend/non_existent_model_for_tests.pkl
+*.pkl
+
+# Generated evaluation outputs
+backend/feature_importance.png
+backend/feature_importance.csv
+backend/feature_importance_summary.md
+backend/adversarial_cases.csv
+backend/adversarial_cases.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

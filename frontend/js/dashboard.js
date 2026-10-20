@@ -1,14 +1,9 @@
-/**
- * PassMetric Dashboard — Main Controller
- * Depends on: api.js (API helper, showToast, strengthColor, strengthName, copyToClipboard)
- */
+
 
 (function () {
     'use strict';
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  STATE
-    // ═══════════════════════════════════════════════════════════════════
+
     const state = {
         user: null,
         entries: [],          // vault entries (decrypted by backend)
@@ -19,11 +14,9 @@
     };
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  HELPERS
-    // ═══════════════════════════════════════════════════════════════════
 
-    /** Render an SVG score ring */
+
+    // renders an SVG score ring 
     function renderScoreRing(container, score, size, strokeWidth) {
         size = size || 140;
         strokeWidth = strokeWidth || 10;
@@ -50,7 +43,7 @@
             </svg>`;
     }
 
-    /** Create a strength bar HTML string */
+    // Create a strength bar HTML string
     function strengthBarHTML(score) {
         const color = strengthColor(score);
         return `
@@ -62,7 +55,7 @@
             </div>`;
     }
 
-    /** Quick strength label */
+    // Quick strength label 
     function strengthLabelText(score) {
         if (score >= 80) return 'Very Strong';
         if (score >= 60) return 'Strong';
@@ -71,18 +64,16 @@
         return 'Very Weak';
     }
 
-    /** Show / hide elements */
+    // Show / hide elements
     function show(el) { el.classList.remove('hidden'); }
     function hide(el) { el.classList.add('hidden'); }
 
-    /** Quick DOM access */
+
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => document.querySelectorAll(sel);
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  TOAST  (enhanced version — works with api.js showToast fallback)
-    // ═══════════════════════════════════════════════════════════════════
+// toast
     function toast(msg, type) {
         type = type || 'success';
         const el = $('#toast');
@@ -95,10 +86,7 @@
         }, 2500);
     }
 
-
-    // ═══════════════════════════════════════════════════════════════════
-    //  NAVIGATION
-    // ═══════════════════════════════════════════════════════════════════
+// Navigation
     function navigateTo(page) {
         state.currentPage = page;
 
@@ -121,9 +109,7 @@
     }
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  DATA LOADING
-    // ═══════════════════════════════════════════════════════════════════
+// loads data
     async function loadUser() {
         try {
             const data = await API.get('/auth/me');
@@ -131,7 +117,7 @@
             $('#user-email').textContent = data.email;
             $('#user-avatar').textContent = data.email.charAt(0).toUpperCase();
         } catch (err) {
-            // Session expired — redirect handled by api.js
+            // Session expired - redirect handled by api.js
             console.warn('Could not load user:', err);
         }
     }
@@ -142,7 +128,7 @@
             // Server returns { entries: [...] }
             const raw = data.entries || [];
 
-            // Enrich each entry with a quick client-side score estimate
+            // quick client-side score estimate
             // (the real score comes from /analyze, but we want instant rendering)
             state.entries = raw.map(e => ({
                 ...e,
@@ -176,7 +162,7 @@
         }
     }
 
-    /** Quick client-side score estimate for instant rendering */
+    // Quick client-side score estimate for instant rendering 
     function estimateScore(pwd) {
         if (!pwd) return 0;
         let s = 0;
@@ -192,15 +178,12 @@
     }
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  RENDER: OVERVIEW
-    // ═══════════════════════════════════════════════════════════════════
     function renderOverview() {
         const entries = state.entries;
         const audit = state.audit;
         if (!audit) return;
 
-        // ── Handle empty vault ──
+        //  Handle empty vault 
         if (entries.length === 0) {
             renderScoreRing($('#overview-ring'), 0, 140, 10);
             const ringLabel = $('#overview-ring-label');
@@ -219,9 +202,9 @@
 
         // Stats cards
         const stats = [
-            { label: 'Total Passwords', value: entries.length, icon: 'vault',   color: '#6366f1' },
+            { label: 'Total Passwords', value: entries.length, icon: 'vault', },
             { label: 'Average Score',   value: audit.average_score, icon: 'shield', color: strengthColor(audit.average_score) },
-            { label: 'Weak Passwords',  value: weak,  icon: 'warning', color: '#f97316' },
+            { label: 'Weak Passwords',  value: weak,  icon: 'warning', color: '#ee1d1d' },
             { label: 'Strong Passwords',value: strong, icon: 'check',  color: '#22c55e' },
         ];
         const iconPaths = {
@@ -276,9 +259,7 @@
     }
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  RENDER: VAULT
-    // ═══════════════════════════════════════════════════════════════════
+// vault 
     const revealedIds = new Set();
     let copiedTimeout = null;
 
@@ -304,7 +285,7 @@
             return `
             <div class="entry-row" data-id="${entry.entry_id}">
                 <div class="entry-favicon" style="background:${c}12;color:${c}">
-                    ${entry.website.charAt(0).toUpperCase()}
+                    ${esc(entry.website.charAt(0).toUpperCase())}
                 </div>
                 <div class="entry-info">
                     <div class="entry-website">${esc(entry.website)}</div>
@@ -341,9 +322,7 @@
     }
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  RENDER: GENERATOR
-    // ═══════════════════════════════════════════════════════════════════
+//generotr 
     let generatorMode = 'password';
 
     async function generatePassword() {
@@ -424,7 +403,11 @@
             parts.push(w);
         }
         let result = parts.join(sep);
-        if (num) result += sep + (100 + Math.floor(Math.random() * 900));
+        if (num) {
+            const number = new Uint32Array(1);
+            crypto.getRandomValues(number);
+            result += sep + (100 + (number[0] % 900));
+        }
         $('#gen-output').textContent = result;
         updateGenStrength(estimateScore(result));
     }
@@ -438,9 +421,7 @@
     }
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  RENDER: ANALYZER
-    // ═══════════════════════════════════════════════════════════════════
+// analzyer
     async function analyzePassword() {
         const pwd = $('#analyzer-input').value.trim();
         if (!pwd) { toast('Enter a password first', 'error'); return; }
@@ -501,28 +482,28 @@
 
         $('#analyzer-feedback').innerHTML = fb;
 
-        // ── Breach status ──
+        // Breach status 
         const breachSection = $('#analyzer-breach');
-        if (breachSection && analysis.breach) {
+        if (analysis.breach) {
             if (analysis.breach.is_breached) {
                 breachSection.innerHTML = `
-                    <div class="breach-alert danger">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
-                        </svg>
-                        <div>
-                            <strong>Breached password!</strong>
-                            <p>${analysis.breach.message}</p>
-                        </div>
-                    </div>`;
+                <div class="breach-alert danger">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                    </svg>
+                    <div>
+                        <strong>Breached password!</strong>
+                        <strong>${esc(analysis.breach.message)}</strong>
+                    </div>
+                </div>`;
             } else {
                 breachSection.innerHTML = `
-                    <div class="breach-alert safe">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
-                        <span>Not found in ${(analysis.breach.dataset_size || 0).toLocaleString()} known leaked passwords</span>
-                    </div>`;
+                <div class="breach-alert safe">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    <span>Not found in ${(analysis.breach.dataset_size || 0).toLocaleString()} known leaked passwords</span>
+                </div>`;
             }
             show(breachSection);
         }
@@ -564,16 +545,14 @@
     }
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  RENDER: HEALTH AUDIT
-    // ═══════════════════════════════════════════════════════════════════
+// health audit
     function renderHealthAudit() {
         const audit = state.audit;
         if (!audit) return;
 
         $('#health-stats').innerHTML = [
             { label: 'Average Score',   value: audit.average_score, color: strengthColor(audit.average_score) },
-            { label: 'Total Entries',   value: audit.total,         color: '#6366f1' },
+            { label: 'Total Entries',   value: audit.total, },
             { label: 'Weak Passwords',  value: audit.weak_count,    color: audit.weak_count > 0 ? '#ef4444' : '#22c55e' },
         ].map(s => `
             <div class="stat-card" style="justify-content:center; flex-direction:column; align-items:center; text-align:center">
@@ -594,11 +573,9 @@
         $('#audit-table-body').innerHTML = rows || '<div class="entry-empty">No entries to audit</div>';
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  RENDER: DATA BREACH
-    // ═══════════════════════════════════════════════════════════════════
 
-    async function checkSingleBreach() {
+// data breach check
+async function checkSingleBreach() {
     const pwd = $('#breach-input').value;
     if (!pwd) { toast('Enter a password to check', 'error'); return; }
 
@@ -614,7 +591,7 @@
                     </svg>
                     <div>
                         <strong>Password found in data breach!</strong>
-                        <p>${data.message}</p>
+                        <strong>${esc(data.message)}</strong>
                     </div>
                 </div>`;
         } else {
@@ -633,9 +610,9 @@
     } catch (err) {
         toast(err.message || 'Breach check failed', 'error');
     }
-    }
+}
 
-    async function scanVaultBreaches() {
+async function scanVaultBreaches() {
     const summaryDiv = $('#breach-scan-summary');
     const resultsDiv = $('#breach-scan-results');
 
@@ -667,17 +644,17 @@
         }
 
         resultsDiv.innerHTML = `
-            <div class="breach-table-header">
+            <div class="audit-table-header">
                 <span>Website</span>
                 <span>Username</span>
                 <span>Status</span>
             </div>
             ${data.entries.map(e => `
-                <div class="breach-table-row ${e.is_breached ? 'breached' : ''}">
+                <div class="audit-row ${e.is_breached ? 'breached' : ''}">
                     <span>${esc(e.website)}</span>
                     <span>${esc(e.username)}</span>
                     <span class="${e.is_breached ? 'text-danger' : 'text-safe'}">
-                        ${e.is_breached ? '⚠️ Breached' : '✓ Safe'}
+                        ${e.is_breached ? 'Breached' : 'Safe'}
                     </span>
                 </div>
             `).join('')}`;
@@ -686,22 +663,153 @@
         toast(err.message || 'Vault scan failed', 'error');
         resultsDiv.innerHTML = '';
     }
-    }
+}
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  RENDER: SETTINGS
-    // ═══════════════════════════════════════════════════════════════════
+// settings
+
     function renderSettings() {
         if (state.user) {
             $('#settings-email').value = state.user.email;
         }
+        // Load persisted preferences into the dropdowns
+        const autolockSel = $('#settings-autolock');
+        const clipboardSel = $('#settings-clipboard');
+        if (autolockSel) {
+            autolockSel.value = localStorage.getItem('passmetric_autolock_minutes') || '15';
+        }
+        if (clipboardSel) {
+            clipboardSel.value = localStorage.getItem('passmetric_clipboard_seconds') || '30';
+        }
     }
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  VAULT CRUD
-    // ═══════════════════════════════════════════════════════════════════
+// settings - actions
+
+    async function changeMasterPassword(confirmWeak) {
+        const cur     = $('#settings-cur-pwd').value;
+        const newPwd  = $('#settings-new-pwd').value;
+        const confirm = $('#settings-confirm-pwd').value;
+
+        if (!cur || !newPwd || !confirm) { toast('Fill in all password fields', 'error'); return; }
+        if (newPwd !== confirm) { toast('New passwords do not match', 'error'); return; }
+
+        const btn = $('#settings-pwd-btn');
+        btn.disabled = true;
+        btn.textContent = 'Updating…';
+
+        try {
+            await API.post('/auth/change-password', {
+                current_password: cur,
+                new_password: newPwd,
+                confirm_weak: confirmWeak || false,
+            });
+            toast('Master password updated successfully');
+            $('#settings-cur-pwd').value = '';
+            $('#settings-new-pwd').value = '';
+            $('#settings-confirm-pwd').value = '';
+        } catch (err) {
+            const data = err.data || {};
+            if (data.is_breached) {
+                toast('This password was found in a data breach and cannot be used.', 'error');
+            } else if (data.requires_confirmation) {
+                const issues = (data.issues || []).join(' ');
+                const msg = `This password is weak (score: ${data.score}).`;
+                if (confirm(`${msg}${issues ? ' ' + issues : ''}\n\nUse it anyway?`)) {
+                    btn.disabled = false;
+                    btn.textContent = 'Update Password';
+                    changeMasterPassword(true);
+                    return;
+                }
+            } else {
+                toast(data.error || err.message || 'Failed to update password', 'error');
+            }
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Update Password';
+        }
+    }
+
+    function openDeleteAccountModal() {
+        $('#delete-account-pwd').value = '';
+        show($('#modal-delete-account'));
+        setTimeout(() => $('#delete-account-pwd').focus(), 50);
+    }
+
+    async function confirmDeleteAccount() {
+        const pwd = $('#delete-account-pwd').value;
+        if (!pwd) { toast('Enter your master password', 'error'); return; }
+
+        const btn = $('#delete-account-confirm-btn');
+        btn.disabled = true;
+        btn.textContent = 'Deleting…';
+
+        try {
+            await API.post('/auth/delete-account', { password: pwd });
+            hide($('#modal-delete-account'));
+            toast('Account deleted. Redirecting…');
+            setTimeout(() => { window.location.href = '/'; }, 2000);
+        } catch (err) {
+            toast((err.data && err.data.error) || err.message || 'Failed to delete account', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Delete My Account';
+        }
+    }
+
+    function openEmailChangeModal() {
+        const newEmail = $('#settings-email').value.trim().toLowerCase();
+        if (!newEmail) { toast('Enter a new email address first', 'error'); return; }
+        if (newEmail === (state.user && state.user.email)) {
+            toast('New email is the same as your current email', 'error');
+            return;
+        }
+        $('#email-change-target').textContent = newEmail;
+        $('#email-change-pwd').value = '';
+        show($('#modal-email-change'));
+        setTimeout(() => $('#email-change-pwd').focus(), 50);
+    }
+
+    async function confirmEmailChange() {
+        const newEmail = $('#settings-email').value.trim().toLowerCase();
+        const pwd = $('#email-change-pwd').value;
+        if (!pwd) { toast('Enter your master password', 'error'); return; }
+
+        const btn = $('#email-change-confirm-btn');
+        btn.disabled = true;
+        btn.textContent = 'Sending…';
+
+        try {
+            const data = await API.post('/auth/request-email-change', {
+                new_email: newEmail,
+                password: pwd,
+            });
+            hide($('#modal-email-change'));
+            toast(data.message || 'Verification email sent');
+            // Restore the input to the current email so it doesn't look changed yet
+            if (state.user) $('#settings-email').value = state.user.email;
+        } catch (err) {
+            toast((err.data && err.data.error) || err.message || 'Failed to request email change', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Send Verification';
+        }
+    }
+
+
+// vault entry modals
+
+    function formatEntryDate(iso) {
+        if (!iso) return '-';
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return '-';
+        const day = d.getDate();
+        const month = d.toLocaleString('en-GB', { month: 'short' });
+        const year = d.getFullYear();
+        const time = d.toLocaleTimeString('en-GB', { hour12: false });
+        return `${day} ${month} ${year}, ${time}`;
+    }
+
     function openAddModal() {
         state.editingEntryId = null;
         $('#modal-entry-title').textContent = 'Add Password';
@@ -710,6 +818,7 @@
         $('#entry-username').value = '';
         $('#entry-password').value = '';
         $('#entry-notes').value = '';
+        hide($('#entry-history'));   
         show($('#modal-entry'));
     }
 
@@ -723,6 +832,13 @@
         $('#entry-username').value = entry.username;
         $('#entry-password').value = entry.password;
         $('#entry-notes').value = entry.notes || '';
+
+        // Populate Item history panel
+        $('#entry-history-pwchanged').textContent = formatEntryDate(entry.password_changed_at);
+        $('#entry-history-updated').textContent   = formatEntryDate(entry.updated_at);
+        $('#entry-history-created').textContent   = formatEntryDate(entry.created_at);
+        show($('#entry-history'));
+
         show($('#modal-entry'));
     }
 
@@ -791,9 +907,7 @@
     }
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  SIGN OUT
-    // ═══════════════════════════════════════════════════════════════════
+// sign out
     async function signOut() {
         try {
             await API.post('/auth/logout');
@@ -803,8 +917,12 @@
 
     // clear vault
     async function clearVault() {
+        const password = $('#clear-vault-pwd').value;
+        if (!password) { toast('Enter your master password', 'error'); return; }
         try {
-            await API.post('/vault/clear');
+            await API.post('/vault/clear', { master_password: password });
+            $('#clear-vault-pwd').value = '';
+            hide($('#modal-clear'));
             toast('Vault cleared');
             await loadVaultEntries();
             await loadHealthAudit();
@@ -814,9 +932,8 @@
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  EVENT BINDINGS
-    // ═══════════════════════════════════════════════════════════════════
+// event bindings
+
     function bindEvents() {
 
         // Sidebar toggle
@@ -844,7 +961,12 @@
             });
         });
 
-        // ─── Vault ───
+        //Vault 
+        $$('.toggle-password[data-toggle-input]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                togglePasswordVisibility(btn.dataset.toggleInput, btn);
+            });
+        });
         $('#vault-add-btn').addEventListener('click', openAddModal);
         $('#entry-save-btn').addEventListener('click', saveEntry);
         $('#delete-confirm-btn').addEventListener('click', confirmDelete);
@@ -873,7 +995,7 @@
             if (action === 'delete') openDeleteModal(id);
         });
 
-        // ─── Generator ───
+        // Generator
         $$('.mode-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 generatorMode = btn.dataset.mode;
@@ -902,42 +1024,176 @@
         });
         $('#gen-copy-btn').addEventListener('click', () => {
             const text = $('#gen-output').textContent;
-            if (text && text !== '—') copyToClipboard(text);
+            if (text && text !== '-') copyToClipboard(text);
         });
 
-        // ─── Analyzer ───
+        // Analyzer
         $('#analyzer-go-btn').addEventListener('click', analyzePassword);
         $('#analyzer-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') analyzePassword();
         });
 
-        // ─── Data Breach ───
+        // Data Breach 
         $('#breach-check-btn').addEventListener('click', checkSingleBreach);
         $('#breach-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') checkSingleBreach();
         });
         $('#breach-scan-btn').addEventListener('click', scanVaultBreaches);
 
-        // ─── Settings ───
-        $('#settings-email-btn').addEventListener('click', () => toast('Email update not yet implemented', 'info'));
-        $('#settings-pwd-btn').addEventListener('click', () => {
-            const cur     = $('#settings-cur-pwd').value;
-            const newPwd  = $('#settings-new-pwd').value;
-            const confirm = $('#settings-confirm-pwd').value;
-            if (!cur || !newPwd) { toast('Fill in all password fields', 'error'); return; }
-            if (newPwd !== confirm) { toast('New passwords do not match', 'error'); return; }
-            toast('Password change not yet implemented', 'info');
-        });
-        $('#settings-delete-btn').addEventListener('click', () => toast('Account deletion not yet implemented', 'info'));
+        //  Settings
+        $('#settings-email-btn').addEventListener('click', openEmailChangeModal);
+        $('#settings-pwd-btn').addEventListener('click', changeMasterPassword);
+        $('#settings-delete-btn').addEventListener('click', openDeleteAccountModal);
+        $('#delete-account-confirm-btn').addEventListener('click', confirmDeleteAccount);
+        $('#email-change-confirm-btn').addEventListener('click', confirmEmailChange);
+        $('#email-change-pwd').addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmEmailChange(); });
+        $('#delete-account-pwd').addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmDeleteAccount(); });
         $('#settings-clear-btn').addEventListener('click', () => show($('#modal-clear')));
         $('#clear-confirm-btn').addEventListener('click', clearVault);
-        
+
+        // Security settings (auto-lock + clipboard) 
+        $('#settings-autolock')?.addEventListener('change', (e) => {
+            localStorage.setItem('passmetric_autolock_minutes', e.target.value);
+            AutoLock.applySettings();
+            toast('Auto-lock preference saved');
+        });
+        $('#settings-clipboard')?.addEventListener('change', (e) => {
+            localStorage.setItem('passmetric_clipboard_seconds', e.target.value);
+            toast('Clipboard clear preference saved');
+        });
+
+        // Lock screen 
+        $('#lock-unlock-btn')?.addEventListener('click', AutoLock.unlockFromForm);
+        $('#lock-logout-btn')?.addEventListener('click', signOut);
+        $('#lock-password')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') AutoLock.unlockFromForm();
+        });
     }
 
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  INIT
-    // ═══════════════════════════════════════════════════════════════════
+// auto lock
+
+    const AutoLock = (() => {
+        let idleTimer = null;
+        let locked = false;
+
+        function getTimeoutMinutes() {
+            const raw = localStorage.getItem('passmetric_autolock_minutes') || '15';
+            if (raw === 'never') return null;
+            const n = parseInt(raw, 10);
+            return Number.isFinite(n) && n > 0 ? n : 15;
+        }
+
+        function resetTimer() {
+            if (locked) return;
+            if (idleTimer) clearTimeout(idleTimer);
+            const mins = getTimeoutMinutes();
+            if (!mins) return;   // "Never"
+            idleTimer = setTimeout(lock, mins * 60 * 1000);
+        }
+
+        async function lock() {
+            if (locked) return;
+            try {
+                await API.post('/auth/lock');
+            } catch { /* network fail - still lock the UI so nothing's exposed */ }
+            showLockScreen();
+        }
+
+        function showLockScreen() {
+            locked = true;
+            document.body.classList.add('vault-locked');
+            const screen = $('#lock-screen');
+            const emailEl = $('#lock-email');
+            const err = $('#lock-error');
+            if (emailEl && state.user) emailEl.textContent = state.user.email;
+            err?.classList.add('hidden');
+            const pw = $('#lock-password');
+            if (pw) pw.value = '';
+            show(screen);
+            pw?.focus();
+            if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+        }
+
+        function hideLockScreen() {
+            locked = false;
+            document.body.classList.remove('vault-locked');
+            hide($('#lock-screen'));
+            resetTimer();
+        }
+
+        async function unlockFromForm() {
+            const pw = $('#lock-password');
+            const err = $('#lock-error');
+            const btn = $('#lock-unlock-btn');
+            if (!pw.value) {
+                err.textContent = 'Please enter your master password.';
+                err.classList.remove('hidden');
+                return;
+            }
+            btn.disabled = true;
+            btn.querySelector('.btn-text').textContent = 'Unlocking…';
+            btn.querySelector('.btn-loader').classList.remove('hidden');
+            try {
+                await API.post('/auth/unlock', { master_password: pw.value });
+                pw.value = '';
+                hideLockScreen();
+                // Reloads vault entries
+                await loadVaultEntries();
+                renderVault($('#vault-search')?.value || '');
+                toast('Vault unlocked');
+            } catch (e) {
+                err.textContent = e.data?.error || 'Incorrect master password.';
+                err.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.querySelector('.btn-text').textContent = 'Unlock';
+                btn.querySelector('.btn-loader').classList.add('hidden');
+            }
+        }
+
+        // Re-arm the idle timer whenever the user interacts with the page
+        function bindActivityListeners() {
+            const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+            events.forEach(ev => window.addEventListener(ev, resetTimer, { passive: true }));
+        }
+
+        
+        function applySettings() {
+            resetTimer();
+        }
+
+        // Check server state on boot. If vault key was dropped (e.g. from a
+        // previous lock that persisted across reload), show lock screen.
+        async function checkOnBoot() {
+            try {
+                const status = await API.get('/auth/vault-status');
+                if (status.locked) {
+                    // Populate email immediately even before state.user loads
+                    if ($('#lock-email')) $('#lock-email').textContent = status.email;
+                    showLockScreen();
+                    return true;
+                }
+            } catch { /* unauthenticated - api.js redirects to / */ }
+            return false;
+        }
+
+        return {
+            init: async () => {
+                bindActivityListeners();
+                const wasLocked = await checkOnBoot();
+                if (!wasLocked) resetTimer();
+            },
+            resetTimer,
+            lock,
+            unlockFromForm,
+            applySettings,
+            isLocked: () => locked,
+        };
+    })();
+
+
+
     async function init() {
         bindEvents();
 
@@ -950,6 +1206,9 @@
 
         // Pre-generate a password for the generator tab
         clientGeneratePassword({ length: 16 });
+
+        // Start auto-lock (checks server vault status, then starts idle timer)
+        AutoLock.init();
     }
 
     // Boot

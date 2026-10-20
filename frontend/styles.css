@@ -50,9 +50,7 @@
     --radius-sm: 6px;
 }
 
-/* ----------------------------------------------------------------
-   Reset & base
-   ---------------------------------------------------------------- */
+/* Reset & base */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
@@ -72,14 +70,10 @@ input, textarea, button, select { font-family: inherit; font-size: inherit; }
 
 ::selection { background: var(--accent); color: #fff; }
 
-/* ----------------------------------------------------------------
-   Utilities
-   ---------------------------------------------------------------- */
+/* Utilities*/
 .hidden { display: none !important; }
 
-/* ----------------------------------------------------------------
-   Buttons
-   ---------------------------------------------------------------- */
+/* Buttons */
 .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     padding: 10px 20px;
@@ -116,9 +110,7 @@ input, textarea, button, select { font-family: inherit; font-size: inherit; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ----------------------------------------------------------------
-   Form elements
-   ---------------------------------------------------------------- */
+/* Form elements */
 .form-group { margin-bottom: 18px; }
 .form-group label {
     display: block;
@@ -191,44 +183,10 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 
 
-/* ----------------------------------------------------------------
-   Auth page
-   ---------------------------------------------------------------- */
+/* Auth page */
 .auth-page { display: flex; align-items: stretch; min-height: 100vh; }
 
-.auth-container {
-    display: flex; width: 100%; min-height: 100vh;
-}
 
-.auth-brand {
-    flex: 0 0 44%;
-    background: linear-gradient(160deg, #1a1040 0%, #0d0f14 60%, #111427 100%);
-    display: flex; align-items: center; justify-content: center;
-    padding: 60px;
-    position: relative;
-    overflow: hidden;
-}
-.auth-brand::before {
-    content: '';
-    position: absolute; top: -40%; right: -20%;
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(108,92,231,0.12) 0%, transparent 60%);
-    border-radius: 50%;
-}
-
-.brand-content { position: relative; z-index: 1; max-width: 380px; }
-.brand-logo { margin-bottom: 24px; }
-.brand-content h1 {
-    font-size: 32px; font-weight: 600;
-    letter-spacing: -0.02em;
-    margin-bottom: 12px;
-}
-.brand-tagline {
-    font-size: 16px; color: var(--text-secondary); line-height: 1.6;
-    margin-bottom: 40px;
-}
-
-.brand-features { display: flex; flex-direction: column; gap: 14px; }
 .feature-item {
     display: flex; align-items: center; gap: 10px;
     font-size: 14px; color: var(--text-secondary);
@@ -260,9 +218,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 
 
-/* ----------------------------------------------------------------
-   Responsive
-   ---------------------------------------------------------------- */
+/* Responsive */
 @media (max-width: 900px) {
     .auth-brand { display: none; }
     .sidebar { width: 60px; padding: 12px 6px; }
@@ -279,9 +235,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 }
 
 
-/* ----------------------------------------------------------------
-   Weak/Exposed Password modal (Bitwarden-style)
-   ---------------------------------------------------------------- */
+/* Weak/Exposed Password modal- */
 .weak-pw-overlay {
     position: fixed; inset: 0;
     background: rgba(0, 0, 0, 0.65);

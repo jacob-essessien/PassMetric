@@ -1,4 +1,3 @@
-
 const API_BASE = '/api';
 let csrfToken = null;
 
@@ -12,7 +11,7 @@ async function fetchCsrfToken() {
 }
 
 async function api(path, options = {}) {
-    if (!csrfToken) await fetchCsrfToken(); // Ensure we have a CSRF token before making requests
+    if (!csrfToken) await fetchCsrfToken(); // makes sure we have a CSRF token before making requests
     const url = API_BASE + path;
     const config = {
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
@@ -29,13 +28,12 @@ async function api(path, options = {}) {
             if (body.error && body.error.includes('CSRF')) {
                 await fetchCsrfToken();
                 config.headers['X-CSRFToken'] = csrfToken;
-                const retry = await fetch(url, config);
-                return retry.json();
+                res = await fetch(url, config);
             }
         }
     } catch (netErr) {
         // Network-level failure (server down, CORS, etc.)
-        const err = new Error('Network error — could not reach server.');
+        const err = new Error('Network error - could not reach server.');
         err.status = 0;
         err.data = {};
         throw err;
@@ -72,14 +70,6 @@ const API = {
     del:  (path)       => api(path, { method: 'DELETE' }),
 };
 
-// Session-expired redirect handled here so every caller doesn't have to
-const _origApi = api;
-window.addEventListener('unhandledrejection', (ev) => {
-    const err = ev.reason;
-    if (err && err.status === 401 && !String(err.message || '').includes('/auth/')) {
-        window.location.href = '/';
-    }
-});
 
 // Shared helpers
 
@@ -90,18 +80,58 @@ function togglePasswordVisibility(inputId, btn) {
     btn.style.opacity = isPassword ? '1' : '0.5';
 }
 
-async function copyToClipboard(text) {
+// Clipboard auto-clear 
+let _clipboardClearTimer = null;
+
+function _getClipboardClearSeconds() {
+    const raw = localStorage.getItem('passmetric_clipboard_seconds');
+    if (!raw || raw === 'never') return null;
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+async function _writeToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
-        showToast('Copied to clipboard');
     } catch {
-        // Fallback
+        // Older browsers / non-HTTPS fallback
         const ta = document.createElement('textarea');
         ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
         document.body.appendChild(ta);
         ta.select();
         document.execCommand('copy');
         document.body.removeChild(ta);
+    }
+}
+
+async function copyToClipboard(text) {
+    await _writeToClipboard(text);
+
+    // Cancel any pending clear so we don't wipe a fresher copy
+    if (_clipboardClearTimer) {
+        clearTimeout(_clipboardClearTimer);
+        _clipboardClearTimer = null;
+    }
+
+    const secs = _getClipboardClearSeconds();
+    if (secs) {
+        showToast(`Copied. Clipboard clears in ${secs}s`);
+        _clipboardClearTimer = setTimeout(async () => {
+            // Only clears if the clipboard still contains what was put there -
+            // the user may have copied something else in the meantime.
+            try {
+                const current = await navigator.clipboard.readText();
+                if (current === text) {
+                    await _writeToClipboard('');
+                }
+            } catch {
+                await _writeToClipboard('');
+            }
+            _clipboardClearTimer = null;
+        }, secs * 1000);
+    } else {
         showToast('Copied to clipboard');
     }
 }
