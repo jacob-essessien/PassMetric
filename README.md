@@ -8,14 +8,15 @@ Developed as a final-year Computer Science project at the University of Sussex. 
 
 ## See it in action
 
-![Credential vault populated with fictional demonstration accounts](docs/media/03-vault.jpg)
+[![Live dashboard walkthrough using fictional demonstration accounts](docs/media/walkthrough.gif)](docs/media/walkthrough.mp4)
 
-[Watch the 24-second screenshot walkthrough](docs/media/walkthrough.mp4) ·
+[Watch the 38-second live dashboard walkthrough](docs/media/walkthrough.mp4) ·
 [Animated preview](docs/media/walkthrough.gif) ·
-[Screenshots, reproduction steps and capture notes](docs/DEMO.md)
+[Reproduction steps and capture notes](docs/DEMO.md)
 
-The walkthrough shows sign-in, adding a credential, password analysis, generation
-and a health audit. It uses synthetic data and the rules baseline; no trained ML
+The continuous recording shows vault search and note editing, generator options,
+password analysis and a health audit, with no added captions or footer. It uses
+synthetic data and the rules baseline; no trained ML
 model or breach corpus was loaded. The vault's quick scores and the full analyser
 currently differ; the demo notes record this and the test results.
 
